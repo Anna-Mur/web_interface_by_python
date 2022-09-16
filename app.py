@@ -18,100 +18,131 @@ NAVBAR_STYLE = {
     'align-items': 'center',
     'padding-top': '0.5rem',
     'padding-bottom': '0.5rem',
-    'justify-content': 'left'
+    'justify-content': 'left',
 }
-
-nav_hosp = [dbc.NavItem(dbc.NavLink("Обработка данных", href="/")),
-            dbc.NavItem(dbc.NavLink("Правила", href="/polyclinic/rules"))]
-
-nav_dent = [dbc.NavItem(dbc.NavLink("Обработка данных", href="/stomatology")),
-            dbc.NavItem(dbc.NavLink("Правила", href="/stomatology/rules"))]
 
 tabs = dbc.Tabs(
         [
-            dbc.Tab(label="Поликлиника", tab_id="hosp"),
-            dbc.Tab(label="Стоматология", tab_id="dent"),
+            dbc.Tab(label="Поликлиника", tab_id="hosp", active_label_style={"color": "black", 'font_weight':'bold'}),
+            dbc.Tab(label="Стоматология", tab_id="dent", active_label_style={"color": "black"}),
         ],
         id="tabs",
         active_tab="hosp",
                 )
-navbar = dbc.Navbar(
-    dbc.Container(
-        [
-            tabs,
-            html.A(
-                # Use row and col to control vertical alignment of logo / brand
-                dbc.Row(
-                    dbc.Col(dbc.NavbarBrand(id='NavBar_name', className="ms-2")),
-                    align="center",
-                    className="g-0",
-                ),
-                style={"textDecoration": "none"},
-            ),
+#
+# navbar = dbc.Navbar(
+#     dbc.Container(
+#         [
+#             html.Div(
+#                 [
+#                     dbc.Col(
+#                         dbc.NavbarBrand(id='NavBar_name', className="ms-2"),
+#                         align="center",
+#                         className="g-0"),
+#                     tabs,
+#                 ],
+#                 style={'display': 'flex'}
+#             ),
+#             dbc.Row(
+#                 [
+#                     dbc.Col(dbc.NavItem(
+#                         dbc.NavLink("Обработка данных", href="/stomatology", style={'color': '#d9d9d9'})),
+#                     md=5),
+#                     dbc.Col(dbc.NavItem(
+#                         dbc.NavLink("Правила", href="/stomatology/rules", style={'color': '#d9d9d9'})),
+#                     md=5)
+#                 ],
+#             ),
+#         ]
+#     ),
+#     color="dark",
+#     dark=True,
+#     style=NAVBAR_STYLE
+# )
+nav_hosp = [
+        dbc.NavLink("Обработка данных", href="/", style={'color': 'black'}),
+        dbc.NavLink("Правила", href="/polyclinic/rules", style={'color': 'black'}),
+        dbc.NavLink("Выбрать директорию для правил", style={'color': 'black'})
+]
 
-            html.Div(id='tab-content')
-        ]
-    ),
-    color="dark",
-    dark=True,
-    style=NAVBAR_STYLE
+
+nav_dent = [
+        dbc.NavLink("Обработка данных", href="/stomatology", style={'color': '#d9d9d9'}),
+        dbc.NavLink("Правила", href="/stomatology/rules", style={'color': '#d9d9d9'})
+]
+
+
+# navbar = dbc.Navbar(dbc.Container(
+#         [
+#             dbc.Row([
+#
+#                 dbc.Col(tabs),
+#                 dbc.Col(dbc.NavbarBrand(id='NavBar_name', className="ms-2"),
+#                         align="center",
+#                         className="g-0"),
+#             ]),
+#             dbc.Nav(id='tab-content')
+#         ]),
+#     color="dark",
+#     dark=True,
+#     style=NAVBAR_STYLE
+# )
+
+card = dbc.Card(
+    [
+        dbc.CardHeader(
+            tabs
+        ),
+        dbc.CardBody(dbc.Nav(id='tab-content'), style={'padding': '0'}),
+    ]
 )
 
 app.layout = html.Div([
-    navbar,
+    card,
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content'),
 ])
-#
-# app.layout = html.Div([navbar,
-#                        dcc.Location(id='url', refresh=False),
-#                        html.Div(hosp_rules.layout)])
 
 @callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
 def display_page(pathname):
-    print(pathname)
     if pathname == '/':
-        print('работает /')
         return hosp_main.layout
     elif pathname == '/polyclinic/rules':
         return hosp_rules.layout
     elif pathname == '/stomatology':
         return dent_main.layout
     elif pathname == '/stomatology/rules':
-        print('работает /stomatology/rules')
         return dent_rules.layout
     else:
         return '404'
 
+@callback(
+    Output("tab-content", "children"),
+    Input("tabs", "active_tab"),
+)
+def render_tab_content(active_tab):
+    """
+    This callback takes the 'active_tab' property as input, as well as the
+    stored graphs, and renders the tab content depending on what the value of
+    'active_tab' is.
+    """
+    if active_tab is not None:
+        if active_tab == "hosp":
+            return nav_hosp
+        elif active_tab == "dent":
+            return nav_dent
+    return ""
 
-
-# @callback(
-#     Output("tab-content", "children"),
-#     Input("tabs", "active_tab"),
-# )
-# def render_tab_content(active_tab):
-#     """
-#     This callback takes the 'active_tab' property as input, as well as the
-#     stored graphs, and renders the tab content depending on what the value of
-#     'active_tab' is.
-#     """
-#     if active_tab is not None:
-#         if active_tab == "hosp":
-#             return nav_hosp
-#         elif active_tab == "dent":
-#             return nav_dent
-#     return "No tab selected"
-
-# @callback(Output('NavBar_name', 'children'),
-#               Input('url', 'pathname'))
-# def navbar_name(pathname):
-#     if pathname == '/':
-#         return 'Главное меню'
-#     elif pathname == '/rules':
-#         return 'Правила'
-#     else:
-#         return ''
+@callback(Output('NavBar_name', 'children'),
+              Input('url', 'pathname'))
+def navbar_name(pathname):
+    if pathname in ['/', '/stomatology']:
+        return 'Обработка данных'
+    elif pathname in ['/polyclinic/rules', '/stomatology/rules']:
+        return 'Просмотр правил'
+    else:
+        return ''
 
 
 if __name__ == '__main__':

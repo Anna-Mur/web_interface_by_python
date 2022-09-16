@@ -45,18 +45,7 @@ tree = html.Div(
 content = html.Div(id="output-selected")
 
 
-# layout = html.Div(
-#     [
-#         dbc.Row(
-#             [
-#                 dbc.Col(tree, md=4, style=ASIDE_STYLE),
-#                 dbc.Col(content, md=7, style=CONTENT_STYLE)
-#             ],
-#         ),
-#
-#     ],
-# )
-layout = dbc.Container(
+layout = html.Div(
     [
         dbc.Row(
             [
@@ -67,6 +56,17 @@ layout = dbc.Container(
 
     ],
 )
+# layout = dbc.Container(
+#     [
+#         dbc.Row(
+#             [
+#                 dbc.Col(tree, md=4, style=ASIDE_STYLE),
+#                 dbc.Col(content, md=7, style=CONTENT_STYLE)
+#             ],
+#         ),
+#
+#     ],
+# )
 
 @callback(Output('output-selected', 'children'),
               [Input('input', 'selected')])
