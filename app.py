@@ -1,5 +1,5 @@
 import dash
-from dash import Input, Output, dcc, html, callback
+from dash import Input, Output, dcc, html, callback, State
 import dash_bootstrap_components as dbc
 from pages import hosp_rules, hosp_main, dent_rules, dent_main
 
@@ -29,46 +29,17 @@ tabs = dbc.Tabs(
         id="tabs",
         active_tab="hosp",
                 )
-#
-# navbar = dbc.Navbar(
-#     dbc.Container(
-#         [
-#             html.Div(
-#                 [
-#                     dbc.Col(
-#                         dbc.NavbarBrand(id='NavBar_name', className="ms-2"),
-#                         align="center",
-#                         className="g-0"),
-#                     tabs,
-#                 ],
-#                 style={'display': 'flex'}
-#             ),
-#             dbc.Row(
-#                 [
-#                     dbc.Col(dbc.NavItem(
-#                         dbc.NavLink("Обработка данных", href="/stomatology", style={'color': '#d9d9d9'})),
-#                     md=5),
-#                     dbc.Col(dbc.NavItem(
-#                         dbc.NavLink("Правила", href="/stomatology/rules", style={'color': '#d9d9d9'})),
-#                     md=5)
-#                 ],
-#             ),
-#         ]
-#     ),
-#     color="dark",
-#     dark=True,
-#     style=NAVBAR_STYLE
-# )
+
 nav_hosp = [
-        dbc.NavLink("Обработка данных", href="/", style={'color': 'black'}),
-        dbc.NavLink("Правила", href="/polyclinic/rules", style={'color': 'black'}),
-        dbc.NavLink("Выбрать директорию для правил", style={'color': 'black'})
+        dbc.NavLink("Обработка данных", href="/", active='exact', style={'color': 'black'}),
+        dbc.NavLink("Правила", href="/polyclinic/rules", active='exact', style={'color': 'black'}),
+        dbc.NavLink("Выбрать директорию для правил", active='exact', style={'color': 'black'})
 ]
 
-
 nav_dent = [
-        dbc.NavLink("Обработка данных", href="/stomatology", style={'color': '#d9d9d9'}),
-        dbc.NavLink("Правила", href="/stomatology/rules", style={'color': '#d9d9d9'})
+        dbc.NavLink("Обработка данных", href="/stomatology", active='exact', style={'color': 'black'}),
+        dbc.NavLink("Правила", href="/stomatology/rules", active='exact', style={'color': 'black'}),
+        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules', active='exact', style={'color': 'black'})
 ]
 
 
@@ -97,6 +68,22 @@ card = dbc.Card(
     ]
 )
 
+modal = dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("Header")),
+                dbc.ModalBody("This is the content of the modal"),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "Close", id="close", className="ms-auto", n_clicks=0
+                    )
+                ),
+            ],
+            id="modal",
+            is_open=False,
+        )
+
+
+
 app.layout = html.Div([
     card,
     dcc.Location(id='url', refresh=False),
@@ -119,6 +106,7 @@ def display_page(pathname):
 
 @callback(
     Output("tab-content", "children"),
+    Output('url', 'pathname'),
     Input("tabs", "active_tab"),
 )
 def render_tab_content(active_tab):
@@ -129,9 +117,11 @@ def render_tab_content(active_tab):
     """
     if active_tab is not None:
         if active_tab == "hosp":
-            return nav_hosp
+            url_pathname='/'
+            return nav_hosp, url_pathname
         elif active_tab == "dent":
-            return nav_dent
+            url_pathname='/stomatology'
+            return nav_dent, url_pathname
     return ""
 
 @callback(Output('NavBar_name', 'children'),
@@ -143,6 +133,18 @@ def navbar_name(pathname):
         return 'Просмотр правил'
     else:
         return ''
+
+# Выбрать директорию для правил
+# @callback(
+#     Output("modal", "is_open"),
+#     Input("path_to_rules", "n_clicks"),
+#     [State("modal", "is_open")]
+# )
+# def toggle_modal(n1):
+#     # if n1 or n2:
+#     #     return not is_open
+#     return is_open
+
 
 
 if __name__ == '__main__':

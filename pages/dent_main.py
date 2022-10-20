@@ -1,86 +1,137 @@
+import pandas as pd
+
 import dash
-from dash import html, callback, Input, Output, dcc
+from dash import html, callback, Input, Output, dcc, dash_table, State
 import dash_bootstrap_components as dbc
 
 
-# dash.register_page(__name__, path='/stomatology')
+df_input = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Excel input.xlsx')
+df_output = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Excel output.xlsx')
+
+
 
 BTNS_STYLE = {
     'display': 'flex',
     'justify-content': 'center',
+    'box-sizing': 'border-box',
+}
+ASIDE_STYLE = {
+    "background-color": "#f8f9fa",
+    'white-space': 'pre-line',
+    'height': 'calc(100vh - 170px)',
+    'overflow': 'scroll',
+    # 'position': 'sticky',
+    'top': '53px',
 }
 
-btns_dent = html.Div(
-    [
-        dbc.Row(
-            [
-                dbc.Button(
-                    "Загрузить файл",
-                    color="primary",
-                    id="button1_dent",
-                    className="mb-3",
-                ),
-                dbc.Button(
-                    "Посмотреть правила",
-                    color="primary",
-                    id="button2_dent",
-                    className="mb-3",
-                ),
 
-                dbc.Button(
-                    "Получить файл",
-                    color="primary",
-                    id="button3_dent",
-                    className="mb-3",
-                ),
-            ]
-        ),
+download_space = html.Div(
+            dcc.Upload(
+                id='upload-data_dent',
+                children=html.Div([
+                    'Перетащите или ',
+                    html.A('выберите файл', className="alert-link")
+                ]),
+                style={
+                    'width': '100%',
+                    'height': '60px',
+                    'lineHeight': '60px',
+                    'borderWidth': '1px',
+                    'borderStyle': 'dashed',
+                    'borderRadius': '5px',
+                    'textAlign': 'center',
+                    'margin': '10px',
+                    'color': '#1890ff'
+                },
+                # Allow multiple files to be uploaded
+                multiple=False
+            )),
+
+
+buttons_result = html.Div(
+    [
+        dbc.Button("Обработать данные", id="btn_prep_xlsx_dent", color="primary", className="me-1", disabled=True,),
+        dbc.Button("Отобразить на экране", id="btn_show_xlsx_dent", color="primary", disabled=True, className="me-1"),
+        dbc.Button("Выгрузить файл", id="btn_download_xlsx_dent", color="primary", disabled=True, className="me-1"),
+        dcc.Download(id="download-dataframe-xlsx_dent"),
     ],
-    id='btns_dent',
     style=BTNS_STYLE
 )
 
+table = html.Div([
+        dash_table.DataTable(
+            data=df_output.to_dict('records'),
+            columns=[{'name': i, 'id': i} for i in df_output.columns],
+            style_data={
+                        # 'whiteSpace': 'normal',
+                        'height': 'auto',
+                        'lineHeight': '10px',
+                        'minWidth': '180px', 'width': '180px', 'maxWidth': '300px',
+            },
 
-layout = html.Div(btns_dent)
+            tooltip_data=[
+                {
+                    column: {'value': str(value), 'type': 'markdown'}
+                    for column, value in row.items()
+                } for row in df_output.to_dict('records')
+            ],
+            tooltip_duration=None,
 
-# layout = dbc.Container(
-#     [
-#         dbc.Row(
-#             [
-#                 dbc.Tabs(
-#                     [
-#                         dbc.Tab(label="Поликлиника", tab_id="hosp"),
-#                         dbc.Tab(label="Стоматология", tab_id="dent"),
-#                     ],
-#                     id="tabs",
-#                     active_tab="hosp",
-#                 ),
-#                 html.Div(id="tab-content", className="p-4"),
-#             ]
-#         ),
-#     ]
-# )
+            style_cell={'textAlign': 'left',
+                        'textOverflow': 'ellipsis',} # left align text in columns for readability
+                ),
+    ])
 
-# @callback(
-#     Output("tab-content", "children"),
-#     Input("tabs", "active_tab"),
-# )
-# def render_tab_content(active_tab):
-#     """
-#     This callback takes the 'active_tab' property as input, as well as the
-#     stored graphs, and renders the tab content depending on what the value of
-#     'active_tab' is.
-#     """
-#     if active_tab is not None:
-#         if active_tab == "hosp":
-#             return btns_hosp
-#         elif active_tab == "dent":
-#             return btns_dent
-#     return "No tab selected"
+layout = dbc.Container([
+    dbc.Row([
+        dbc.Col(download_space),
+        dbc.Col(html.Div(id='upload_status_dent'), align="center", style={'font-weight': '500', 'color': '#6c757d'}),
+        dbc.Col(buttons_result, md=5, align="center")
 
-# @callback(
-#     Output("page-content", "children"),
-#     Input("button2", "n_clicks"),
-# )
-# def open_rules(n_clicks):
-#     return rules_page.layout
+    ]),
+    html.Div(id='output-table_dent', style=ASIDE_STYLE),
+])
+
+
+
+# Разблокировка кнопки "Обработать данные" при загрузке данных
+@callback(
+    Output("upload_status_dent", "children"),
+    Output("btn_prep_xlsx_dent", "disabled"),
+    Input('upload-data_dent', 'filename'),
+    prevent_initial_call=True,)
+def show_upload_status_dent(filename):
+     return 'Загружен файл {}'.format(filename), False
+
+# Разблокировка кнопок при нажатии на кнопку "Обработать данные"
+@callback(
+    Output("btn_show_xlsx_dent", "disabled"),
+    Output("btn_download_xlsx_dent", "disabled"),
+    Input("btn_prep_xlsx_dent", "n_clicks"),
+    prevent_initial_call=True,)
+def disabled_btns_dent(n_clicks):
+     return False, False
+
+# Скачивание файла с результатами при нажатии кнопки "скачать файл"
+@callback(
+    Output("download-dataframe-xlsx_dent", "data"),
+    Input("btn_download_xlsx_dent", "n_clicks"),
+    prevent_initial_call=True,
+)
+def download_file_dent(n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate
+    else:
+        return dcc.send_data_frame(df_output.to_excel, "df_output.xlsx", sheet_name="Sheet_name_1")
+
+# Отображение таблицы с результатами при нажатии кнопки "Показать на экране"
+@callback(
+    Output("output-table_dent", "children"),
+    Input("btn_show_xlsx_dent", "n_clicks"),
+    prevent_initial_call=True,
+)
+def show_result_table_dent(n_clicks):
+    if n_clicks is None:
+        raise dash.exceptions.PreventUpdate
+    else:
+        return table

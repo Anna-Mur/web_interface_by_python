@@ -26,7 +26,7 @@ CONTENT_STYLE = {
 ASIDE_STYLE = {
     "background-color": "#f8f9fa",
     'white-space': 'pre-line',
-    'height': 'calc(100vh - 53px)',
+    'height': 'calc(100vh - 100px)',
     'overflow': 'scroll',
     # 'position': 'sticky',
     'top': '53px',
@@ -43,21 +43,10 @@ tree = html.Div(
         data=(data_tree_dent)),
     style=TREE_STYLE
 )
-content = html.Div(id="output-selected_dent")
+content = html.Div(id="output-selected_dent", style={'white-space': 'pre-wrap'})
 
 
-# layout = html.Div(
-#     [
-#         dbc.Row(
-#             [
-#                 dbc.Col(tree, md=4, style=ASIDE_STYLE),
-#                 dbc.Col(content, md=7, style=CONTENT_STYLE)
-#             ],
-#         ),
-#
-#     ],
-# )
-layout = dbc.Container(
+layout = html.Div(
     [
         dbc.Row(
             [
@@ -68,6 +57,7 @@ layout = dbc.Container(
 
     ],
 )
+
 
 @callback(Output('output-selected_dent', 'children'),
               [Input('input_dent', 'selected')])
