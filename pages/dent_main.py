@@ -1,5 +1,7 @@
 import pandas as pd
 import subprocess
+import base64
+import io
 import time
 
 import dash
@@ -13,7 +15,25 @@ import diskcache
 cache = diskcache.Cache("./cache")
 background_callback_manager = DiskcacheManager(cache)
 
-df_input = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Услуги.xlsx')
+def parse_contents(contents, filename):
+    content_type, content_string = contents.split(',')
+
+    global df #define data frame as global
+    decoded = base64.b64decode(content_string)
+    try:
+        if 'csv' in filename:
+            # Assume that the user uploaded a CSV file
+            df = pd.read_csv(
+                io.StringIO(decoded.decode('utf-8')))
+        elif 'xls' in filename:
+            # Assume that the user uploaded an excel file
+            df = pd.read_excel(io.BytesIO(decoded))
+    except Exception as e:
+        print(e)
+
+    df.to_excel(r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\Услуги.xlsx', index=False)
+
+# df_input = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Услуги.xlsx')
 # r'C:\Users\anna.muraveva\Documents\SAS\Услуги.xlsx'
 # df_output = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Excel output.xlsx')
 # df_output_test = pd.read_csv(r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\matching_rules_stoma.csv')
@@ -121,7 +141,6 @@ def creat_table(df_output):
                     ),
         ])
 
-
 # Итоговый layout
 layout = dbc.Container([
     dbc.Row([
@@ -137,12 +156,15 @@ layout = dbc.Container([
 
 # Разблокировка кнопки "Обработать данные" при загрузке данных
 @callback(
+    # Output("output-table_dent", "children"),
     Output("upload_status_dent", "children"),
     Output("btn_prep_xlsx_dent", "disabled"),
+    Input('upload-data_dent', 'contents'),
     Input('upload-data_dent', 'filename'),
     prevent_initial_call=True,)
-def show_upload_status_dent(filename):
-     return 'Загружен файл {}'.format(filename), False
+def show_upload_status_dent(contents, filename):
+    parse_contents(contents, filename)
+    return 'Загружен файл {}'.format(filename), False
 #
 # # Действия при нажатии на кнопку "Обработать файл"
 # @callback(
@@ -197,7 +219,7 @@ def show_upload_status_dent(filename):
 )
 def show_result_table_dent(n_clicks):
     # ЗАПУСК ДВИЖКА
-    subprocess.run(["python", "main.py", r'C:\Users\anna.muraveva\Documents\SAS\Услуги.xlsx', 'rules_stoma', '-p', 'basic', '-o', 'matching_rules_stoma.csv'],
+    subprocess.run(["python", "main.py", r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\Услуги.xlsx', 'rules_stoma', '-p', 'basic', '-o', 'matching_rules_stoma.csv'],
                             capture_output=False,
                             cwd=r'C:\Users\anna.muraveva\Documents\SAS\rule_engine')
 
