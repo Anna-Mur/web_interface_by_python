@@ -86,9 +86,9 @@ buttons_result = html.Div([
 # Область процесса загрузки
 load_progress = dcc.Loading(
             id="loading_dent",
-            type="dot",
-            children=html.Div(id="loading-output-1"),
-            fullscreen=False,
+            type="cube",
+            # children=html.Div('Идет обработка'),
+            fullscreen=True,
         )
 # table_test = html.Div([
 #             dash_table.DataTable(
