@@ -1,17 +1,21 @@
 import pandas as pd
+import time
 
 import dash
-from dash import html, callback, Input, Output, dcc, dash_table, State
+from dash import html, callback, dcc, dash_table, DiskcacheManager
 import dash_bootstrap_components as dbc
+from dash.dependencies import Input, Output
 
+# Diskcache for non-production apps when developing locally
+import diskcache
+cache = diskcache.Cache("./cache")
+background_callback_manager = DiskcacheManager(cache)
 
-df_input = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Excel input.xlsx')
 df_output = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Excel output.xlsx')
-
 
 BTNS_STYLE = {
     'display': 'flex',
-    'justify-content': 'center',
+    'justify-content': 'right',
     'box-sizing': 'border-box',
 }
 ASIDE_STYLE = {
@@ -23,10 +27,10 @@ ASIDE_STYLE = {
     'top': '53px',
 }
 
-
+# Область загрузки файла
 download_space = html.Div(
             dcc.Upload(
-                id='upload-data',
+                id='upload_data_hosp',
                 children=html.Div([
                     'Перетащите или ',
                     html.A('выберите файл', className="alert-link")
@@ -46,17 +50,23 @@ download_space = html.Div(
                 multiple=False
             )),
 
-
-buttons_result = html.Div(
-    [
-        dbc.Button("Обработать данные", id="btn_prep_xlsx", color="primary", className="me-1", disabled=True,),
-        dbc.Button("Отобразить на экране", id="btn_show_xlsx", color="primary", disabled=True, className="me-1"),
-        dbc.Button("Выгрузить файл", id="btn_download_xlsx", color="primary", disabled=True, className="me-1"),
-        dcc.Download(id="download-dataframe-xlsx"),
+# Область обработки файла
+buttons_result = html.Div([
+    dbc.Button("Обработать данные", id="btn_prep_xlsx_hosp", color="primary", className="me-1", disabled=True,),
+    dcc.Download(id="download-dataframe-xlsx_hosp"),
     ],
-    style=BTNS_STYLE
+    style=BTNS_STYLE,
 )
 
+# Область процесса загрузки
+load_progress = dcc.Loading(
+            id="loading_hosp",
+            type="dot",
+            children=html.Div(id="loading-output-1"),
+            fullscreen=False,
+        )
+
+# Область отображения итоговой таблицы
 table = html.Div([
         dash_table.DataTable(
             data=df_output.to_dict('records'),
@@ -81,66 +91,46 @@ table = html.Div([
                 ),
     ])
 
+# Итоговый layout
 layout = dbc.Container([
     dbc.Row([
-        dbc.Col(download_space),
-        dbc.Col(html.Div(id='upload_status'), align="center", style={'font-weight': '500', 'color':'#6c757d'}),
-        dbc.Col(buttons_result, md=5, align="center")
-
-    ]),
-    html.Div(id='output-table', style=ASIDE_STYLE),
+        dbc.Col(download_space, md=4),
+        dbc.Col(html.Div(id='upload_status_hosp'), md=3, align="center", style={'font-weight': '500', 'color': '#6c757d'}),
+        dbc.Col(buttons_result, md=3, align="center"),
+        dbc.Col(load_progress, md=2, align="center", style={'justify-content': 'left'}),
+    ],
+    justify="between"),
+    html.Div(id='output-table_hosp', style=ASIDE_STYLE),
 ])
-
 
 
 # Разблокировка кнопки "Обработать данные" при загрузке данных
 @callback(
-    Output("upload_status", "children"),
-    Output("btn_prep_xlsx", "disabled"),
-    Input('upload-data', 'filename'),
+    Output("upload_status_hosp", "children"),
+    Output("btn_prep_xlsx_hosp", "disabled"),
+    Input('upload_data_hosp', 'filename'),
     prevent_initial_call=True,)
-def show_upload_status(filename):
+def show_upload_status_hosp(filename):
      return 'Загружен файл {}'.format(filename), False
 
-# Разблокировка кнопок при нажатии на кнопку "Обработать данные"
+# Действия при нажатии на кнопку "Обработать файл"
 @callback(
-    Output("btn_show_xlsx", "disabled"),
-    Output("btn_download_xlsx", "disabled"),
-    Input("btn_prep_xlsx", "n_clicks"),
-    prevent_initial_call=True,)
-def disabled_btns(n_clicks):
-     return False, False
-
-# Скачивание файла с результатами при нажатии кнопки "скачать файл"
-@callback(
-    Output("download-dataframe-xlsx", "data"),
-    Input("btn_download_xlsx", "n_clicks"),
-    prevent_initial_call=True,
+    Output("output-table_hosp", "children"),
+    Output("download-dataframe-xlsx_hosp", "data"),
+    Output("loading_hosp", "children"),
+    Input("btn_prep_xlsx_hosp", "n_clicks"),
+    # prevent_initial_call=True,
+    background=True,
+    manager=background_callback_manager,
+    running=[
+        (Output("btn_prep_xlsx_hosp", "disabled"), True, False),
+    ],
+    prevent_initial_call=True
 )
-def download_file(n_clicks):
+def show_result_table_dent(n_clicks):
+    time.sleep(2.0)
+
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate
     else:
-        return dcc.send_data_frame(df_output.to_excel, "df_output.xlsx", sheet_name="Sheet_name_1")
-
-# Отображение таблицы с результатами при нажатии кнопки "Показать на экране"
-@callback(
-    Output("output-table", "children"),
-    Input("btn_show_xlsx", "n_clicks"),
-    prevent_initial_call=True,
-)
-def show_result_table(n_clicks):
-    if n_clicks is None:
-        raise dash.exceptions.PreventUpdate
-    else:
-        return table
-
-
-
-
-# @callback(
-#     Output("btn_show_xlsx", "disabled"),
-#     Input("btn_prep_xlsx", "n_clicks"),
-#     prevent_initial_call=True,)
-# def fff(n_clicks):
-#      return False
+        return table, dcc.send_data_frame(df_output.to_excel, "df_output.xlsx", sheet_name="Sheet_name_1"), " "

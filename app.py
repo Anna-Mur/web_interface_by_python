@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 from pages import hosp_rules, hosp_main, dent_rules, dent_main
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app.config.suppress_callback_exceptions=True
 
 server = app.server
 
@@ -20,6 +21,8 @@ NAVBAR_STYLE = {
     'padding-bottom': '0.5rem',
     'justify-content': 'left',
 }
+
+
 
 tabs = dbc.Tabs(
         [
@@ -43,22 +46,6 @@ nav_dent = [
 ]
 
 
-# navbar = dbc.Navbar(dbc.Container(
-#         [
-#             dbc.Row([
-#
-#                 dbc.Col(tabs),
-#                 dbc.Col(dbc.NavbarBrand(id='NavBar_name', className="ms-2"),
-#                         align="center",
-#                         className="g-0"),
-#             ]),
-#             dbc.Nav(id='tab-content')
-#         ]),
-#     color="dark",
-#     dark=True,
-#     style=NAVBAR_STYLE
-# )
-
 card = dbc.Card(
     [
         dbc.CardHeader(
@@ -68,21 +55,19 @@ card = dbc.Card(
     ]
 )
 
-modal = dbc.Modal(
-            [
-                dbc.ModalHeader(dbc.ModalTitle("Header")),
-                dbc.ModalBody("This is the content of the modal"),
-                dbc.ModalFooter(
-                    dbc.Button(
-                        "Close", id="close", className="ms-auto", n_clicks=0
-                    )
-                ),
-            ],
-            id="modal",
-            is_open=False,
-        )
-
-
+# modal = dbc.Modal(
+#             [
+#                 dbc.ModalHeader(dbc.ModalTitle("Header")),
+#                 dbc.ModalBody("This is the content of the modal"),
+#                 dbc.ModalFooter(
+#                     dbc.Button(
+#                         "Close", id="close", className="ms-auto", n_clicks=0
+#                     )
+#                 ),
+#             ],
+#             id="modal",
+#             is_open=False,
+#         )
 
 app.layout = html.Div([
     card,
