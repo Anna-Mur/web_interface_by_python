@@ -7,9 +7,6 @@ import dash_bootstrap_components as dbc
 from tree_data_funcs import get_tree_data
 # from dash.dependencies import Input, Output
 
-
-# dash.register_page(__name__, path='/stomatology/rules')
-
 path_dir = 'C:\\Users\\anna.muraveva\\Documents\\SAS\\Rules\\rules_stoma'
 data_tree_dent = get_tree_data(path_dir)
 
