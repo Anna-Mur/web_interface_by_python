@@ -8,7 +8,6 @@ import dash
 from dash import html, callback, dcc, dash_table, DiskcacheManager
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
-from funcs import parse_contents, creat_table
 
 
 # Diskcache for non-production apps when developing locally
@@ -16,7 +15,23 @@ import diskcache
 cache = diskcache.Cache("./cache")
 background_callback_manager = DiskcacheManager(cache)
 
+def parse_contents(contents, filename):
+    content_type, content_string = contents.split(',')
 
+    global df #define data frame as global
+    decoded = base64.b64decode(content_string)
+    try:
+        if 'csv' in filename:
+            # Assume that the user uploaded a CSV file
+            df = pd.read_csv(
+                io.StringIO(decoded.decode('utf-8')))
+        elif 'xls' in filename:
+            # Assume that the user uploaded an excel file
+            df = pd.read_excel(io.BytesIO(decoded))
+    except Exception as e:
+        print(e)
+
+    df.to_excel(r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\Услуги.xlsx', index=False)
 
 # df_input = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Услуги.xlsx')
 # r'C:\Users\anna.muraveva\Documents\SAS\Услуги.xlsx'
@@ -71,9 +86,9 @@ buttons_result = html.Div([
 # Область процесса загрузки
 load_progress = dcc.Loading(
             id="loading_dent",
-            type="cube",
+            type="dot",
             children=html.Div(id="loading-output-1"),
-            fullscreen=True,
+            fullscreen=False,
         )
 # table_test = html.Div([
 #             dash_table.DataTable(
@@ -101,7 +116,30 @@ load_progress = dcc.Loading(
 #
 
 # Область отображения итоговой таблицы
+def creat_table(df_output):
+    return html.Div([
+            dash_table.DataTable(
+                data=df_output.to_dict('records'),
+                columns=[{'name': i, 'id': i} for i in df_output.columns],
+                style_data={
+                            # 'whiteSpace': 'normal',
+                            'height': 'auto',
+                            'lineHeight': '10px',
+                            'minWidth': '180px', 'width': '180px', 'maxWidth': '300px',
+                },
 
+                tooltip_data=[
+                    {
+                        column: {'value': str(value), 'type': 'markdown'}
+                        for column, value in row.items()
+                    } for row in df_output.to_dict('records')
+                ],
+                tooltip_duration=None,
+
+                style_cell={'textAlign': 'left',
+                            'textOverflow': 'ellipsis',} # left align text in columns for readability
+                    ),
+        ])
 
 # Итоговый layout
 layout = dbc.Container([
@@ -112,6 +150,7 @@ layout = dbc.Container([
         dbc.Col(load_progress, md=2, align="center", style={'justify-content': 'left'}),
     ],
     justify="between"),
+    html.Div(id='print_id'),
     html.Div(id='output-table_dent', style=ASIDE_STYLE),
 ])
 
@@ -124,7 +163,7 @@ layout = dbc.Container([
     Input('upload-data_dent', 'filename'),
     prevent_initial_call=True,)
 def show_upload_status_dent(contents, filename):
-    parse_contents(contents, filename, med_serv='dent')
+    parse_contents(contents, filename)
     return 'Загружен файл {}'.format(filename), False
 #
 # # Действия при нажатии на кнопку "Обработать файл"
@@ -168,6 +207,7 @@ def show_upload_status_dent(contents, filename):
     Output("output-table_dent", "children"),
     Output("download-dataframe-xlsx_dent", "data"),
     Output("loading_dent", "children"),
+    # Output("print_id", "children"),
     Input("btn_prep_xlsx_dent", "n_clicks"),
     # prevent_initial_call=True,
     background=True,
@@ -179,7 +219,7 @@ def show_upload_status_dent(contents, filename):
 )
 def show_result_table_dent(n_clicks):
     # ЗАПУСК ДВИЖКА
-    subprocess.run(["python", "main.py", r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\Услуги_dent.xlsx', 'rules_poly', '-p', 'basic', '-o', 'matching_rules_poly.csv'],
+    subprocess.run(["python", "main.py", r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\Услуги.xlsx', 'rules_stoma', '-p', 'basic', '-o', 'matching_rules_stoma.csv'],
                             capture_output=False,
                             cwd=r'C:\Users\anna.muraveva\Documents\SAS\rule_engine')
 
@@ -190,5 +230,5 @@ def show_result_table_dent(n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate
     else:
-        return creat_table(table), dcc.send_data_frame(table.to_excel, "Result_dent.xlsx", sheet_name="Result_dent"), " "
+        return creat_table(table), dcc.send_data_frame(table.to_excel, "РААААБОТАЕТ.xlsx", sheet_name="Sheet_name_1"), " "
 
