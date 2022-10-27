@@ -4,7 +4,7 @@ import dash
 from dash import html, callback, Input, Output, dcc
 import dash_treeview_antd
 import dash_bootstrap_components as dbc
-from tree_data_funcs import get_tree_data
+from funcs import get_tree_data
 # from dash.dependencies import Input, Output
 
 path_dir = 'C:\\Users\\anna.muraveva\\Documents\\SAS\\Rules\\rules_stoma'
@@ -17,7 +17,10 @@ TREE_STYLE = {
 
 CONTENT_STYLE = {
     'padding-left': '5%',
-    'padding-top': '5%'
+    'padding-top': '5%',
+    'overflow': 'scroll',
+    'height': 'calc(100vh - 100px)',
+    'top': '53px'
 }
 
 ASIDE_STYLE = {
@@ -48,7 +51,7 @@ layout = html.Div(
         dbc.Row(
             [
                 dbc.Col(tree, md=4, style=ASIDE_STYLE),
-                dbc.Col(content, md=7, style=CONTENT_STYLE)
+                dbc.Col(content, md=8, style=CONTENT_STYLE)
             ],
         ),
 

@@ -1,17 +1,19 @@
 import pandas as pd
 import time
+import subprocess
 
 import dash
 from dash import html, callback, dcc, dash_table, DiskcacheManager
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
+from funcs import parse_contents, creat_table
 
 # Diskcache for non-production apps when developing locally
 import diskcache
 cache = diskcache.Cache("./cache")
 background_callback_manager = DiskcacheManager(cache)
 
-df_output = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Excel output.xlsx')
+
 
 BTNS_STYLE = {
     'display': 'flex',
@@ -61,35 +63,35 @@ buttons_result = html.Div([
 # Область процесса загрузки
 load_progress = dcc.Loading(
             id="loading_hosp",
-            type="dot",
+            type="cube",
             children=html.Div(id="loading-output-1"),
-            fullscreen=False,
+            fullscreen=True,
         )
 
 # Область отображения итоговой таблицы
-table = html.Div([
-        dash_table.DataTable(
-            data=df_output.to_dict('records'),
-            columns=[{'name': i, 'id': i} for i in df_output.columns],
-            style_data={
-                        # 'whiteSpace': 'normal',
-                        'height': 'auto',
-                        'lineHeight': '10px',
-                        'minWidth': '180px', 'width': '180px', 'maxWidth': '300px',
-            },
-
-            tooltip_data=[
-                {
-                    column: {'value': str(value), 'type': 'markdown'}
-                    for column, value in row.items()
-                } for row in df_output.to_dict('records')
-            ],
-            tooltip_duration=None,
-
-            style_cell={'textAlign': 'left',
-                        'textOverflow': 'ellipsis',} # left align text in columns for readability
-                ),
-    ])
+# table = html.Div([
+#         dash_table.DataTable(
+#             data=df_output.to_dict('records'),
+#             columns=[{'name': i, 'id': i} for i in df_output.columns],
+#             style_data={
+#                         # 'whiteSpace': 'normal',
+#                         'height': 'auto',
+#                         'lineHeight': '10px',
+#                         'minWidth': '180px', 'width': '180px', 'maxWidth': '300px',
+#             },
+#
+#             tooltip_data=[
+#                 {
+#                     column: {'value': str(value), 'type': 'markdown'}
+#                     for column, value in row.items()
+#                 } for row in df_output.to_dict('records')
+#             ],
+#             tooltip_duration=None,
+#
+#             style_cell={'textAlign': 'left',
+#                         'textOverflow': 'ellipsis',} # left align text in columns for readability
+#                 ),
+#     ])
 
 # Итоговый layout
 layout = dbc.Container([
@@ -108,10 +110,12 @@ layout = dbc.Container([
 @callback(
     Output("upload_status_hosp", "children"),
     Output("btn_prep_xlsx_hosp", "disabled"),
+    Input('upload_data_hosp', 'contents'),
     Input('upload_data_hosp', 'filename'),
     prevent_initial_call=True,)
-def show_upload_status_hosp(filename):
-     return 'Загружен файл {}'.format(filename), False
+def show_upload_status_hosp(contents, filename):
+    parse_contents(contents, filename, med_serv='hosp')
+    return 'Загружен файл {}'.format(filename), False
 
 # Действия при нажатии на кнопку "Обработать файл"
 @callback(
@@ -127,10 +131,16 @@ def show_upload_status_hosp(filename):
     ],
     prevent_initial_call=True
 )
-def show_result_table_dent(n_clicks):
-    time.sleep(2.0)
-
+def show_result_table_hosp(n_clicks):
+    # ЗАПУСК ДВИЖКА
+    subprocess.run(
+        ["python", "main.py", r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\Услуги_hosp.xlsx', 'rules_poly', '-p',
+         'basic', '-o', 'matching_rules_poly.csv'],
+        capture_output=False,
+        cwd=r'C:\Users\anna.muraveva\Documents\SAS\rule_engine')
+    table_path = r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\matching_rules_poly.csv'
+    table = pd.read_csv(table_path)
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate
     else:
-        return table, dcc.send_data_frame(df_output.to_excel, "df_output.xlsx", sheet_name="Sheet_name_1"), " "
+        return creat_table(table), dcc.send_data_frame(table.to_excel, "Result_hosp.xlsx", sheet_name="Result_hosp"), " "
