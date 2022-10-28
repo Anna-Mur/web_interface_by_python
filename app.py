@@ -11,6 +11,17 @@ server = app.server
 app.scripts.config.serve_locally = True
 app.css.config.serve_locally = True
 
+def current_path_rules(med_serv):
+
+    if med_serv == 'hosp':
+        p = r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\path_rules_poly.txt'
+    else:
+        p = r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\path_rules_stoma.txt'
+
+    f_read = open(p, "r", encoding='utf-8')
+    last_line = f_read.readlines()[-1]
+    return last_line
+
 NAVBAR_STYLE = {
     'position': 'sticky',
     'top': '0',
@@ -34,15 +45,16 @@ tabs = dbc.Tabs(
                 )
 
 nav_hosp = [
-        dbc.NavLink("Обработка данных", href="/", active='exact', style={'color': 'black'}),
+        dbc.NavLink("Обработка данных", href="/", style={'color': 'black'}, active=True),
         dbc.NavLink("Правила", href="/polyclinic/rules", active='exact', style={'color': 'black'}),
-        dbc.NavLink("Выбрать директорию для правил", active='exact', style={'color': 'black'})
+        # dbc.Button("Open modal", id="open", n_clicks=0),
+        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_hosp', active='exact', style={'color': 'black'})
 ]
 
 nav_dent = [
         dbc.NavLink("Обработка данных", href="/stomatology", active='exact', style={'color': 'black'}),
         dbc.NavLink("Правила", href="/stomatology/rules", active='exact', style={'color': 'black'}),
-        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules', active='exact', style={'color': 'black'})
+        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_dent', active='exact', style={'color': 'black'})
 ]
 
 
@@ -54,26 +66,45 @@ card = dbc.Card(
         dbc.CardBody(dbc.Nav(id='tab-content'), style={'padding': '0'}),
     ]
 )
-
-# modal = dbc.Modal(
-#             [
-#                 dbc.ModalHeader(dbc.ModalTitle("Header")),
-#                 dbc.ModalBody("This is the content of the modal"),
-#                 dbc.ModalFooter(
-#                     dbc.Button(
-#                         "Close", id="close", className="ms-auto", n_clicks=0
-#                     )
-#                 ),
-#             ],
-#             id="modal",
-#             is_open=False,
-#         )
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+modal = dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("Выбор директории для правил")),
+                dbc.ModalBody([
+                    html.Div("Текущая директория"),
+                    html.Div(current_path_rules(med_serv='poly')),
+                    html.Hr(),
+                    # html.Div(),
+                    dcc.Upload(html.A('Изменить директорию')),
+                    # html.Button('Изменить директорию для правил поликлиники')
+                     ]),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "Close", id="close", className="ms-auto", n_clicks=0
+                    )
+                ),
+            ],
+            id="modal",
+            is_open=False,
+        )
 
 app.layout = html.Div([
     card,
     dcc.Location(id='url', refresh=False),
+    modal,
     html.Div(id='page-content'),
 ])
+
+# Выбрать директорию для правил
+@callback(
+    Output("modal", "is_open"),
+    [Input("path_to_rules_hosp", "n_clicks"), Input("close", "n_clicks")],
+    [State("modal", "is_open")]
+)
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
 
 @callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
@@ -104,9 +135,11 @@ def render_tab_content(active_tab):
         if active_tab == "hosp":
             url_pathname='/'
             return nav_hosp, url_pathname
+            # return dbc.Nav(nav_hosp, pills=True, fill=True), url_pathname
         elif active_tab == "dent":
             url_pathname='/stomatology'
             return nav_dent, url_pathname
+            # return dbc.Nav(nav_dent, pills=True, fill=True), url_pathname
     return ""
 
 @callback(Output('NavBar_name', 'children'),
@@ -119,20 +152,11 @@ def navbar_name(pathname):
     else:
         return ''
 
-# Выбрать директорию для правил
-# @callback(
-#     Output("modal", "is_open"),
-#     Input("path_to_rules", "n_clicks"),
-#     [State("modal", "is_open")]
-# )
-# def toggle_modal(n1):
-#     # if n1 or n2:
-#     #     return not is_open
-#     return is_open
+
 
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
-    # app.run_server(debug=False, dev_tools_ui=False, dev_tools_props_check=False)
+    # app.run_server(debug=True)
+    app.run_server(debug=False, dev_tools_ui=False, dev_tools_props_check=False)
 
