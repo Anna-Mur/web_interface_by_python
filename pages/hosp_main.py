@@ -64,7 +64,7 @@ buttons_result = html.Div([
 load_progress = dcc.Loading(
             id="loading_hosp",
             type="cube",
-            children=html.Div(id="loading-output-1"),
+            # children=html.Div(id="loading-output-1"),
             fullscreen=True,
         )
 

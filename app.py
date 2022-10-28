@@ -45,10 +45,10 @@ tabs = dbc.Tabs(
                 )
 
 nav_hosp = [
-        dbc.NavLink("Обработка данных", href="/", style={'color': 'black'}, active=True),
-        dbc.NavLink("Правила", href="/polyclinic/rules", active='exact', style={'color': 'black'}),
+        dbc.NavLink("Обработка данных", href="/", style={'color': 'black'}),
+        dbc.NavLink("Правила", href="/polyclinic/rules", style={'color': 'black'}),
         # dbc.Button("Open modal", id="open", n_clicks=0),
-        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_hosp', active='exact', style={'color': 'black'})
+        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_hosp', style={'color': 'black'})
 ]
 
 nav_dent = [
