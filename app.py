@@ -37,24 +37,24 @@ NAVBAR_STYLE = {
 
 tabs = dbc.Tabs(
         [
-            dbc.Tab(label="Поликлиника", tab_id="hosp", active_label_style={"color": "black", 'font_weight':'bold'}),
-            dbc.Tab(label="Стоматология", tab_id="dent", active_label_style={"color": "black"}),
+            dbc.Tab(label="Поликлиника", tab_id="hosp", style={'color': 'black'}, active_label_style={"color": "black"}),
+            dbc.Tab(label="Стоматология", tab_id="dent", style={'color': '#69727a'}, active_label_style={"color": "black"}),
         ],
         id="tabs",
         active_tab="hosp",
                 )
 
 nav_hosp = [
-        dbc.NavLink("Обработка данных", href="/", style={'color': 'black'}),
-        dbc.NavLink("Правила", href="/polyclinic/rules", style={'color': 'black'}),
+        dbc.NavLink("Обработка данных", href="/"), # style={'color': '#69727a'}),
+        dbc.NavLink("Правила", href="/polyclinic/rules"), #, style={'color': '#69727a'}),
         # dbc.Button("Open modal", id="open", n_clicks=0),
-        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_hosp', style={'color': 'black'})
+        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_hosp', active='exact'), #, style={'color': '#69727a'})
 ]
 
 nav_dent = [
-        dbc.NavLink("Обработка данных", href="/stomatology", active='exact', style={'color': 'black'}),
-        dbc.NavLink("Правила", href="/stomatology/rules", active='exact', style={'color': 'black'}),
-        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_dent', active='exact', style={'color': 'black'})
+        dbc.NavLink("Обработка данных", href="/stomatology", active='exact'), #, style={'color': 'black'}),
+        dbc.NavLink("Правила", href="/stomatology/rules", active='exact'), #, style={'color': 'black'}),
+        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_dent'), #, active='exact', style={'color': 'black'})
 ]
 
 
@@ -63,10 +63,11 @@ card = dbc.Card(
         dbc.CardHeader(
             tabs
         ),
-        dbc.CardBody(dbc.Nav(id='tab-content'), style={'padding': '0'}),
+        dbc.CardBody(dbc.Nav(id='tab-content', style={'pointer-events': 'auto'}), style={'padding': '0'}),
     ]
 )
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
 modal = dbc.Modal(
             [
                 dbc.ModalHeader(dbc.ModalTitle("Выбор директории для правил")),
@@ -92,19 +93,19 @@ app.layout = html.Div([
     card,
     dcc.Location(id='url', refresh=False),
     modal,
-    html.Div(id='page-content'),
+    html.Div(id='page-content', style={'overflow': 'hidden', 'margin-right': 'auto'}),
 ])
 
 # Выбрать директорию для правил
-@callback(
-    Output("modal", "is_open"),
-    [Input("path_to_rules_hosp", "n_clicks"), Input("close", "n_clicks")],
-    [State("modal", "is_open")]
-)
-def toggle_modal(n1, n2, is_open):
-    if n1 or n2:
-        return not is_open
-    return is_open
+# @callback(
+#     Output("modal", "is_open"),
+#     [Input("path_to_rules_hosp", "n_clicks"), Input("close", "n_clicks")],
+#     [State("modal", "is_open")]
+# )
+# def toggle_modal(n1, n2, is_open):
+#     if n1 or n2:
+#         return not is_open
+#     return is_open
 
 @callback(Output('page-content', 'children'),
               Input('url', 'pathname'))

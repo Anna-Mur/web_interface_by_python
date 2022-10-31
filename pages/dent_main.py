@@ -173,5 +173,5 @@ def show_result_table_dent(n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate
     else:
-        return creat_table(table), dcc.send_data_frame(table.to_excel, "Result_dent.xlsx", sheet_name="Result_dent"), " "
+        return creat_table(table), dcc.send_data_frame(table.to_excel, "Result_dent.xlsx", sheet_name="Result_dent", index=False), " "
 

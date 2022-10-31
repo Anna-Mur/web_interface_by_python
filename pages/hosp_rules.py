@@ -48,17 +48,12 @@ tree = html.Div(
 content = html.Div(id="output-selected", style={'white-space': 'pre-wrap'})
 
 
-layout = html.Div(
-    [
-        dbc.Row(
+layout = dbc.Row(
             [
                 dbc.Col(tree, md=4, style=ASIDE_STYLE),
                 dbc.Col(content, md=8, style=CONTENT_STYLE)
             ],
-        ),
-
-    ],
-)
+        )
 
 
 @callback(Output('output-selected', 'children'),

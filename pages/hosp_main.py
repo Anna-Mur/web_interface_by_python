@@ -143,4 +143,4 @@ def show_result_table_hosp(n_clicks):
     if n_clicks is None:
         raise dash.exceptions.PreventUpdate
     else:
-        return creat_table(table), dcc.send_data_frame(table.to_excel, "Result_hosp.xlsx", sheet_name="Result_hosp"), " "
+        return creat_table(table), dcc.send_data_frame(table.to_excel, "Result_hosp.xlsx", sheet_name="Result_hosp", index=False), " "
