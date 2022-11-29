@@ -6,9 +6,6 @@ import dash_treeview_antd
 import dash_bootstrap_components as dbc
 from funcs import get_tree_data
 
-
-# dash.register_page(__name__, path='/polyclinic/rules')
-
 path_dir_hosp = 'C:\\Users\\anna.muraveva\\Documents\\SAS\\Rules\\rules_poly'
 data_tree_hosp = get_tree_data(path_dir_hosp)
 
@@ -30,7 +27,6 @@ ASIDE_STYLE = {
     'white-space': 'pre-line',
     'height': 'calc(100vh - 100px)',
     'overflow': 'scroll',
-    # 'position': 'sticky',
     'top': '53px',
 }
 

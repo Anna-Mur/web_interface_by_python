@@ -45,16 +45,15 @@ tabs = dbc.Tabs(
                 )
 
 nav_hosp = [
-        dbc.NavLink("Обработка данных", href="/"), # style={'color': '#69727a'}),
-        dbc.NavLink("Правила", href="/polyclinic/rules"), #, style={'color': '#69727a'}),
-        # dbc.Button("Open modal", id="open", n_clicks=0),
-        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_hosp', active='exact'), #, style={'color': '#69727a'})
+        dbc.NavLink("Обработка данных", href="/"),
+        dbc.NavLink("Правила", href="/polyclinic/rules"),
+
 ]
 
 nav_dent = [
-        dbc.NavLink("Обработка данных", href="/stomatology", active='exact'), #, style={'color': 'black'}),
-        dbc.NavLink("Правила", href="/stomatology/rules", active='exact'), #, style={'color': 'black'}),
-        dbc.NavLink("Выбрать директорию для правил", id='path_to_rules_dent'), #, active='exact', style={'color': 'black'})
+        dbc.NavLink("Обработка данных", href="/stomatology", active='exact'),
+        dbc.NavLink("Правила", href="/stomatology/rules", active='exact'),
+
 ]
 
 
@@ -96,16 +95,6 @@ app.layout = html.Div([
     html.Div(id='page-content', style={'overflow': 'hidden', 'margin-right': 'auto'}),
 ])
 
-# Выбрать директорию для правил
-# @callback(
-#     Output("modal", "is_open"),
-#     [Input("path_to_rules_hosp", "n_clicks"), Input("close", "n_clicks")],
-#     [State("modal", "is_open")]
-# )
-# def toggle_modal(n1, n2, is_open):
-#     if n1 or n2:
-#         return not is_open
-#     return is_open
 
 @callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
@@ -156,8 +145,6 @@ def navbar_name(pathname):
 
 
 
-
 if __name__ == '__main__':
-    # app.run_server(debug=True)
     app.run_server(debug=False, dev_tools_ui=False, dev_tools_props_check=False)
 

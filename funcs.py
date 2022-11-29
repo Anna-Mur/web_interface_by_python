@@ -3,7 +3,7 @@ import base64
 import io
 import pandas as pd
 
-from dash import html, callback, dcc, dash_table, DiskcacheManager
+from dash import html, dash_table
 
 def get_subdict(lst_of_dict: list, title):
     for dct in lst_of_dict:
@@ -52,15 +52,13 @@ def get_tree_data(path):
 def parse_contents(contents, filename, med_serv):
     content_type, content_string = contents.split(',')
 
-    global df #define data frame as global
+    global df
     decoded = base64.b64decode(content_string)
     try:
         if 'csv' in filename:
-            # Assume that the user uploaded a CSV file
             df = pd.read_csv(
                 io.StringIO(decoded.decode('utf-8')))
         elif 'xls' in filename:
-            # Assume that the user uploaded an excel file
             df = pd.read_excel(io.BytesIO(decoded))
     except Exception as e:
         print(e)
@@ -94,4 +92,5 @@ def creat_table(df_output):
                 style_cell={'textAlign': 'left',
                             'textOverflow': 'ellipsis',} # left align text in columns for readability
                     ),
-        ])
+        ]
+    )

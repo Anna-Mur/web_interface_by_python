@@ -1,5 +1,4 @@
 import pandas as pd
-import time
 import subprocess
 
 import dash
@@ -64,34 +63,8 @@ buttons_result = html.Div([
 load_progress = dcc.Loading(
             id="loading_hosp",
             type="cube",
-            # children=html.Div(id="loading-output-1"),
             fullscreen=True,
         )
-
-# Область отображения итоговой таблицы
-# table = html.Div([
-#         dash_table.DataTable(
-#             data=df_output.to_dict('records'),
-#             columns=[{'name': i, 'id': i} for i in df_output.columns],
-#             style_data={
-#                         # 'whiteSpace': 'normal',
-#                         'height': 'auto',
-#                         'lineHeight': '10px',
-#                         'minWidth': '180px', 'width': '180px', 'maxWidth': '300px',
-#             },
-#
-#             tooltip_data=[
-#                 {
-#                     column: {'value': str(value), 'type': 'markdown'}
-#                     for column, value in row.items()
-#                 } for row in df_output.to_dict('records')
-#             ],
-#             tooltip_duration=None,
-#
-#             style_cell={'textAlign': 'left',
-#                         'textOverflow': 'ellipsis',} # left align text in columns for readability
-#                 ),
-#     ])
 
 # Итоговый layout
 layout = dbc.Container([
@@ -123,7 +96,6 @@ def show_upload_status_hosp(contents, filename):
     Output("download-dataframe-xlsx_hosp", "data"),
     Output("loading_hosp", "children"),
     Input("btn_prep_xlsx_hosp", "n_clicks"),
-    # prevent_initial_call=True,
     background=True,
     manager=background_callback_manager,
     running=[

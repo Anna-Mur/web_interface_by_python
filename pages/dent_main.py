@@ -2,7 +2,6 @@ import pandas as pd
 import subprocess
 import base64
 import io
-import time
 
 import dash
 from dash import html, callback, dcc, dash_table, DiskcacheManager
@@ -18,25 +17,19 @@ background_callback_manager = DiskcacheManager(cache)
 def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
 
-    global df #define data frame as global
+    global df
     decoded = base64.b64decode(content_string)
     try:
         if 'csv' in filename:
-            # Assume that the user uploaded a CSV file
             df = pd.read_csv(
                 io.StringIO(decoded.decode('utf-8')))
         elif 'xls' in filename:
-            # Assume that the user uploaded an excel file
             df = pd.read_excel(io.BytesIO(decoded))
     except Exception as e:
         print(e)
 
     df.to_excel(r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\Услуги.xlsx', index=False)
 
-# df_input = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Услуги.xlsx')
-# r'C:\Users\anna.muraveva\Documents\SAS\Услуги.xlsx'
-# df_output = pd.read_excel(r'C:\Users\anna.muraveva\Documents\SAS\Excel output.xlsx')
-# df_output_test = pd.read_csv(r'C:\Users\anna.muraveva\Documents\SAS\rule_engine\matching_rules_stoma.csv')
 
 BTNS_STYLE = {
     'display': 'flex',
@@ -87,7 +80,6 @@ buttons_result = html.Div([
 load_progress = dcc.Loading(
             id="loading_dent",
             type="cube",
-            # children=html.Div(id="loading-output-1"),
             fullscreen=True,
         )
 
@@ -113,7 +105,7 @@ def creat_table(df_output):
                 tooltip_duration=None,
 
                 style_cell={'textAlign': 'left',
-                            'textOverflow': 'ellipsis',} # left align text in columns for readability
+                            'textOverflow': 'ellipsis',}
                     ),
         ])
 
